@@ -40,9 +40,6 @@ impl CmdExector for CsvOpts {
     }
 }
 
-#[derive(Debug, Parser)]
-pub struct Base64SubCommand {}
-
 fn parse_format(format: &str) -> Result<OutputFormat, anyhow::Error> {
     format.parse()
 }
