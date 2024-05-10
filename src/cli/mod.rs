@@ -1,13 +1,17 @@
 mod base64;
 mod csv;
 mod genpass;
-use std::path::Path;
+mod http;
+mod text;
+use std::path::{Path, PathBuf};
 
 use clap::Parser;
 
 pub use self::{
     base64::{Base64Format, Base64SubCommand},
     csv::OutputFormat,
+    http::HttpSubCommand,
+    text::{TextSignFormat, TextSubCommand},
 };
 use self::{csv::CsvOpts, genpass::GenPassOpts};
 
@@ -26,9 +30,13 @@ pub enum SubCommand {
     GenPass(GenPassOpts),
     #[command(subcommand)]
     Base64(Base64SubCommand),
+    #[command(subcommand)]
+    Text(TextSubCommand),
+    #[command(subcommand)]
+    Http(HttpSubCommand),
 }
 
-fn verify_input_file(filename: &str) -> Result<String, &'static str> {
+fn verify_file(filename: &str) -> Result<String, &'static str> {
     if filename == "-" || Path::new(filename).exists() {
         Ok(filename.into())
     } else {
@@ -36,15 +44,11 @@ fn verify_input_file(filename: &str) -> Result<String, &'static str> {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_verify_input_file() {
-        assert_eq!(verify_input_file("-"), Ok("-".into()));
-        assert_eq!(verify_input_file("*"), Err("File does not exist"));
-        assert_eq!(verify_input_file("Cargo.toml"), Ok("Cargo.toml".into()));
-        assert_eq!(verify_input_file("not-exist"), Err("File does not exist"));
+fn verify_path(path: &str) -> Result<PathBuf, &'static str> {
+    let p = Path::new(path);
+    if p.exists() && p.is_dir() {
+        Ok(path.into())
+    } else {
+        Err("Path does not exist or is not a directory")
     }
 }
